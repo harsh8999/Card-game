@@ -3,12 +3,55 @@
  */
 package cardgame;
 
+import java.util.Scanner;
+
+import cardgame.entity.Player;
+
 public class App {
-    public String getGreeting() {
-        return "Hello World!";
+    public static void getGreeting() {
+        System.out.println("Hello, This is a Card Game ");
+        System.out.println("Rules:");
+        System.out.println("1. Each player starts with a hand of 5 cards.");
+        System.out.println("2. A player can only play a card if it matches either the suit or the rank of the top card on the discard pile.");
+        System.out.println("3. If a player cannot play a card, they must draw a card from the draw pile. If the draw pile is empty, the game ends in a draw and no player is declared a winner..");
+        System.out.println("4. The game ends when one player runs out of cardswho is declared the winner.");
+        System.out.println("5. Action cards.");
+        System.out.println("   Ace(A): Skip the next player in turn");
+        System.out.println("   Kings(K): Reverse the sequence of who plays next");
+        System.out.println("   Queens(Q): +2");
+        System.out.println("   Jacks(J): +4");
+        System.out.println("NOTE: actions are not stackable i.e. if Q is played by player 1 then player two draws two cards and cannot play a Q from his hand on that turn even if available");
     }
 
     public static void main(String[] args) {
-        System.out.println(new App().getGreeting());
+        final int MAX_PLAYERS = 4;
+        getGreeting();
+        Game game = new Game();
+        // setup players
+        Scanner scanner = new Scanner(System.in);
+        int numberOfPlayer = 0;
+        while(numberOfPlayer < 2 ||  numberOfPlayer > MAX_PLAYERS) {
+            System.out.print("Enter the number of players (2, 3 OR 4) : ");
+            numberOfPlayer = scanner.nextInt();
+        }
+
+
+        for(int i = 1; i <= numberOfPlayer; i++) {
+            System.out.print("Enter player "+i+ " name : ");
+            String name = scanner.next();
+            Player player = new Player(i, name);
+            game.addPlayer(player);
+            // System.out.println(game.getPlayers());
+            // System.out.println(player);
+        }
+        
+        game.distributeCards();
+        // game.getPlayers().forEach(System.out::println);
+        // game.getDrawPile().forEach(System.out::println);
+        game.startGame();
+        
+        scanner.close();
     }
+
+    
 }
