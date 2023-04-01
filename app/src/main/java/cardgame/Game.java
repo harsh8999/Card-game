@@ -76,7 +76,6 @@ public class Game {
     }
 
     public void addPlayer(Player player) {
-        System.out.println(players.size());
         if(players.size() >= MAX_PLAYERS) {
             throw new PlayerLimitException(MAX_PLAYERS_MSG);
         }
