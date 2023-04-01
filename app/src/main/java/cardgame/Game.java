@@ -10,15 +10,9 @@ import cardgame.entity.Card;
 import cardgame.entity.Deck;
 import cardgame.entity.Player;
 import cardgame.exception.GameDrawException;
+import cardgame.exception.PlayerLimitException;
 
 public class Game {
-
-    private final int MAX_PLAYERS = 4;
-    private final int INITIAL_CARDS_IN_HAND = 5;
-    private final String FORWARD = "forward";
-    private final String BACKWARD = "backward";
-    private final String DRAW_MSG = "Game Draw!!!";
-    private final Scanner scanner;
 
     private Deck deck;
     private List<Player> players;
@@ -27,13 +21,24 @@ public class Game {
     private Deque<Card> drawPile;
     private Deque<Card> discardPile;
 
-    private boolean gameEnded;
-    private boolean hasValidMove;
+    private boolean gameEnded; 
+    private boolean hasValidMove; // check if player can play this card or not
 
-    private String direction;
+    private String direction; // forward or backward
 
     private int currentPlayerIndex;
     private int nextPlayerIndex;
+
+    
+    private final int MAX_PLAYERS = 4;
+    private final int INITIAL_CARDS_IN_HAND = 5;
+    private final String FORWARD = "forward";
+    private final String BACKWARD = "backward";
+    private final String DRAW_MSG = "Game Draw!!!";
+    private final String MAX_PLAYERS_MSG = "Maximum number of players reached!!!";
+    private final String DISCARD_TOP_MSG = "\nTop card on the discard pile. : ";
+    private final String ENTER_CARD_MSG = "Enter a card index you wanna play (1, 2, 3...) : ";
+    private final Scanner scanner;
 
     /**
      * 
@@ -71,8 +76,9 @@ public class Game {
     }
 
     public void addPlayer(Player player) {
-        if(players.size() > MAX_PLAYERS) {
-            throw new RuntimeException("Maximum number of players reached!!!");
+        System.out.println(players.size());
+        if(players.size() >= MAX_PLAYERS) {
+            throw new PlayerLimitException(MAX_PLAYERS_MSG);
         }
         players.add(player);
     }
@@ -108,8 +114,7 @@ public class Game {
     // discard pile is empty
     public void startGame() {
 
-        System.out.println("\n\n\n\n\n\n");
-        System.out.println("Game Starts... \n\n");
+        System.out.println("\n\n\n\nGame Starts... \n\n");
         
         while(!gameEnded) {
             // if card drawn than no need to check for top of the drawn dekh for special characters
@@ -129,12 +134,12 @@ public class Game {
 
             // first move
             if(discardPile.isEmpty()) {
-                System.out.println("Enter a card index (1, 2, 3...) : ");
+                System.out.println(ENTER_CARD_MSG);
                 cardIndex = scanner.nextInt() - 1; 
                 // Invalid 
                 while(cardIndex < 0 || cardIndex > currentPlayer.numberOfCardsInHand()) {
                     System.out.println("Please enter valid Index Number!!!");
-                    System.out.print("Enter a card index (1, 2, 3...) : ");
+                    System.out.print(ENTER_CARD_MSG);
                     cardIndex = scanner.nextInt() - 1;
                 }
                 
@@ -144,8 +149,8 @@ public class Game {
             }
             
             while(!hasValidMove) {
-                System.out.println("\nTop card on the discard pile. : " + discardPile.peek());
-                System.out.println("\nEnter a card index (1, 2, 3...) ");
+                System.out.println(DISCARD_TOP_MSG + discardPile.peek());
+                System.out.println(ENTER_CARD_MSG);
                 System.out.print("If NO valid card present enter " + (currentPlayer.numberOfCardsInHand() + 1) + " to draw a card from Draw Pile. : " );
                 cardIndex = scanner.nextInt() - 1; 
 
@@ -183,161 +188,104 @@ public class Game {
 
             // The game ends when one player runs out of cards
             if(currentPlayer.numberOfCardsInHand() == 0) {
+                System.out.println("\n\nCongratulations!!!");
                 System.out.println(currentPlayer.getName() +" wins...");
                 gameEnded = true;
                 break;
             }
 
-            // moveNextPlayerIndex();
-            if(direction.equals(FORWARD)) {
-                nextPlayerIndex = (currentPlayerIndex + 1) % players.size();
-            } else {
-                nextPlayerIndex = (currentPlayerIndex - 1);
-                if(nextPlayerIndex < 0) {
-                    nextPlayerIndex = players.size() - 1;
-                }
-            }
+            moveNextPlayerIndex();
 
             // if card is not drawn than check for special case
             if(!cardDrawn) {
-                // actionCards();
-                // System.out.println("Action Card on top....");
-                // System.out.println(discardPile.peek().getRank());
-                switch(discardPile.peek().getRank()) {
-                    // Ace(A): Skip the next player in turn
-                    case ACE:
-                        // next player
-                        // moveNextPlayerIndex();
-                        System.out.println("Player "+ (nextPlayerIndex+1) + " Skipped...\n");
-                        if(direction.equals(FORWARD)) {
-                            nextPlayerIndex = (nextPlayerIndex + 1) % players.size();
-                        } else {
-                            nextPlayerIndex = (nextPlayerIndex - 1);
-                            if(nextPlayerIndex < 0) {
-                                nextPlayerIndex = players.size() - 1;
-                            }
-                        }
-                        break;
-
-                    // Kings(K): Reverse the sequence of who plays next
-                    case KING:
-                        // reverse();
-                        System.out.println("Reverse...\n");
-                        if(direction.equals(BACKWARD)) {
-                            direction = FORWARD;
-                        } else {
-                            direction = BACKWARD;
-                        }
-
-                        // adjust the next player
-                        if(direction.equals(FORWARD)) {
-                            nextPlayerIndex = (currentPlayerIndex + 1) % players.size();
-                        } else {
-                            nextPlayerIndex = (currentPlayerIndex - 1);
-                            if(nextPlayerIndex < 0) {
-                                nextPlayerIndex = players.size() - 1;
-                            }
-                        }
-                        break;
-                        
-                    // Queens(Q): +2
-                    case QUEEN:
-                        // draw 2 cards from drawDeck
-                        // drawCardPalenty(players.get(nextPlayerIndex), 2);
-                        System.out.println("Draw 2...\n");
-                        try {
-                            for(int i = 0; i < 2; i++) {
-                                players.get(nextPlayerIndex).addCardInHand(drawCard());
-                            }
-                        } catch (GameDrawException ex) {
-                            gameEnded = true;
-                            System.out.println(DRAW_MSG);
-                        }
-                        break;
-                    
-                    // Jacks(J): +4
-                    case JACK:
-                        // draw 4 cards from drawDeck
-                        // drawCardPalenty(players.get(nextPlayerIndex), 4);
-                        System.out.println("\nDraw 4...");
-                        try {
-                            for(int i = 0; i < 4; i++) {
-                                players.get(nextPlayerIndex).addCardInHand(drawCard());
-                            }
-                        } catch (GameDrawException ex) {
-                            gameEnded = true;
-                            System.out.println(DRAW_MSG);
-                        }
-                        break;
-                    default:
-                        break;
-                }
+                actionCards();
             }
 
             
             // set current player to next player for next round
             currentPlayerIndex = nextPlayerIndex;
+            System.out.println();
         }
     }
 
-    // private void actionCards() {
-    //     System.out.println("Action Card on top....");
-    //     System.out.println(discardPile.peek().getRank());
-    //     switch(discardPile.peek().getRank()) {
-    //         // Ace(A): Skip the next player in turn
-    //         case ACE:
-    //             // next player
-    //             moveNextPlayerIndex();
-    //             break;
+    private void actionCards() {
+        switch(discardPile.peek().getRank()) {
+            // Ace(A): Skip the next player in turn
+            case ACE:
+                // next player
+                System.out.println("Player "+ (nextPlayerIndex+1) + " Skipped...\n");
+                moveNextPlayerIndex();
+                break;
 
-    //         // Kings(K): Reverse the sequence of who plays next
-    //         case KING:
-    //             reverse();
-    //             break;
+            // Kings(K): Reverse the sequence of who plays next
+            case KING:
+                System.out.println("Reverse...\n");
+                reverse();
+                // adjust the next player
+                moveNextPlayerIndex();
+                break;
                 
-    //         // Queens(Q): +2
-    //         case QUEEN:
-    //             // draw 2 cards from drawDeck
-    //             drawCardPalenty(players.get(nextPlayerIndex), 2);
-    //             break;
+            // Queens(Q): +2
+            case QUEEN:
+                // draw 2 cards from drawDeck
+                drawCardPalenty(players.get(nextPlayerIndex), 2);
+                System.out.println("Draw 2...\n");
+                // try {
+                //     for(int i = 0; i < 2; i++) {
+                //         players.get(nextPlayerIndex).addCardInHand(drawCard());
+                //     }
+                // } catch (GameDrawException ex) {
+                //     gameEnded = true;
+                //     System.out.println(DRAW_MSG);
+                // }
+                break;
             
-    //         // Jacks(J): +4
-    //         case JACK:
-    //             // draw 4 cards from drawDeck
-    //             drawCardPalenty(players.get(nextPlayerIndex), 4);
-    //             break;
-    //         default:
-    //             break;
-    //     }
-    // }
+            // Jacks(J): +4
+            case JACK:
+                // draw 4 cards from drawDeck
+                drawCardPalenty(players.get(nextPlayerIndex), 4);
+                System.out.println("\nDraw 4...");
+                // try {
+                //     for(int i = 0; i < 4; i++) {
+                //         players.get(nextPlayerIndex).addCardInHand(drawCard());
+                //     }
+                // } catch (GameDrawException ex) {
+                //     gameEnded = true;
+                //     System.out.println(DRAW_MSG);
+                // }
+                break;
+            default:
+                break;
+        }
+    }
 
-    // private void reverse() {
-    //     if(direction.equals(BACKWARD)) {
-    //         direction = FORWARD;
-    //     } else {
-    //         direction = BACKWARD;
-    //     }
-    // }
+    private void reverse() {
+        if(direction.equals(BACKWARD)) {
+            direction = FORWARD;
+        } else {
+            direction = BACKWARD;
+        }
+    }
 
-    // private void moveNextPlayerIndex() {
-    //     // next player
-    //     if(direction.equals(FORWARD)) {
-            //     nextPlayerIndex = (currentPlayerIndex + 1) % players.size();
-            // } else {
-            //     nextPlayerIndex = (currentPlayerIndex - 1);
-            //     if(nextPlayerIndex < 0) {
-            //         nextPlayerIndex = players.size() - 1;
-            //     }
-            // }
-    // }
+    private void moveNextPlayerIndex() {
+        // next player
+        if(direction.equals(FORWARD)) {
+            nextPlayerIndex = (currentPlayerIndex + 1) % players.size();
+        } else {
+            nextPlayerIndex = (currentPlayerIndex - 1);
+            if(nextPlayerIndex < 0) {
+                nextPlayerIndex = players.size() - 1;
+            }
+        }
+    }
 
-    // private void drawCardPalenty(Player player, int numberOfCards) {
-    //     try {
-    //         for(int i = 0; i < numberOfCards; i++) {
-    //             player.addCardInHand(drawCard());
-    //         }
-    //     } catch (GameDrawException ex) {
-    //         gameEnded = true;
-    //     }
-    // }
+    private void drawCardPalenty(Player player, int numberOfCards) {
+        try {
+            for(int i = 0; i < numberOfCards; i++) {
+                player.addCardInHand(drawCard());
+            }
+        } catch (GameDrawException ex) {
+            gameEnded = true;
+        }
+    }
 }
