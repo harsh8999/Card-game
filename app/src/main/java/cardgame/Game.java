@@ -17,6 +17,7 @@ public class Game {
     private final int INITIAL_CARDS_IN_HAND = 5;
     private final String FORWARD = "forward";
     private final String BACKWARD = "backward";
+    private final String DRAW_MSG = "Game Draw!!!";
     private final Scanner scanner;
 
     private Deck deck;
@@ -48,13 +49,12 @@ public class Game {
         scanner = new Scanner(System.in);
     }
 
-     /**
+    /**
      * @return the players
      */
     public List<Player> getPlayers() {
         return players;
     }
-
     
     /**
      * @return the drawPile
@@ -97,7 +97,7 @@ public class Game {
 
     public Card drawCard() {
         if(drawPile.isEmpty()) {
-            throw new GameDrawException("Game Draw !!!");
+            throw new GameDrawException(DRAW_MSG);
         }
         return drawPile.pop();
     }
@@ -108,17 +108,16 @@ public class Game {
     // discard pile is empty
     public void startGame() {
 
-        System.out.println("\n\n\n\n\n\n\n\n\n\n");
-        System.out.println("Game Starts... ");
+        System.out.println("\n\n\n\n\n\n");
+        System.out.println("Game Starts... \n\n");
         
         while(!gameEnded) {
             // if card drawn than no need to check for top of the drawn dekh for special characters
             boolean cardDrawn = false;
             // Player plays
-            // System.out.println("Current Player "+currentPlayerIndex);
+            System.out.println("Player " + (currentPlayerIndex + 1));
             Player currentPlayer = players.get(currentPlayerIndex);
-            System.out.println("\n");
-            System.out.println(currentPlayer.getName() + "'s turn..");
+            System.out.println("\n"+currentPlayer.getName() + "'s turn..");
             int ind = 1;
             for(Card handCard: currentPlayer.getCards()) {
                 System.out.println(ind + ". " + handCard);
@@ -145,10 +144,8 @@ public class Game {
             }
             
             while(!hasValidMove) {
-                System.out.println();
-                System.out.println("Discard Pile's top card : " + discardPile.peek());
-                System.out.println();
-                System.out.println("Enter a card index (1, 2, 3...) ");
+                System.out.println("\nTop card on the discard pile. : " + discardPile.peek());
+                System.out.println("\nEnter a card index (1, 2, 3...) ");
                 System.out.print("If NO valid card present enter " + (currentPlayer.numberOfCardsInHand() + 1) + " to draw a card from Draw Pile. : " );
                 cardIndex = scanner.nextInt() - 1; 
 
@@ -166,7 +163,7 @@ public class Game {
                         currentPlayer.addCardInHand(drawCard());
                     } catch (GameDrawException ex) {
                         gameEnded = true;
-                        System.out.println("Game Draw!!!");
+                        System.out.println(DRAW_MSG);
                     }
 
                 } else if(currentPlayer.getCards().get(cardIndex).getSuit() == discardPile.peek().getSuit() || 
@@ -211,7 +208,7 @@ public class Game {
                     case ACE:
                         // next player
                         // moveNextPlayerIndex();
-                        System.out.println("Skip\n");
+                        System.out.println("Player "+ (nextPlayerIndex+1) + " Skipped...\n");
                         if(direction.equals(FORWARD)) {
                             nextPlayerIndex = (nextPlayerIndex + 1) % players.size();
                         } else {
@@ -225,7 +222,7 @@ public class Game {
                     // Kings(K): Reverse the sequence of who plays next
                     case KING:
                         // reverse();
-                        System.out.println("Reverse\n");
+                        System.out.println("Reverse...\n");
                         if(direction.equals(BACKWARD)) {
                             direction = FORWARD;
                         } else {
@@ -247,14 +244,14 @@ public class Game {
                     case QUEEN:
                         // draw 2 cards from drawDeck
                         // drawCardPalenty(players.get(nextPlayerIndex), 2);
-                        System.out.println("Draw 2\n");
+                        System.out.println("Draw 2...\n");
                         try {
                             for(int i = 0; i < 2; i++) {
                                 players.get(nextPlayerIndex).addCardInHand(drawCard());
                             }
                         } catch (GameDrawException ex) {
                             gameEnded = true;
-                            System.out.println("Game Draw!!!");
+                            System.out.println(DRAW_MSG);
                         }
                         break;
                     
@@ -262,14 +259,14 @@ public class Game {
                     case JACK:
                         // draw 4 cards from drawDeck
                         // drawCardPalenty(players.get(nextPlayerIndex), 4);
-                        System.out.println("\nDraw 4");
+                        System.out.println("\nDraw 4...");
                         try {
                             for(int i = 0; i < 4; i++) {
                                 players.get(nextPlayerIndex).addCardInHand(drawCard());
                             }
                         } catch (GameDrawException ex) {
                             gameEnded = true;
-                            System.out.println("Game Draw!!!");
+                            System.out.println(DRAW_MSG);
                         }
                         break;
                     default:
