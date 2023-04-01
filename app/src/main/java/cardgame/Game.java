@@ -72,7 +72,7 @@ public class Game {
 
     public void addPlayer(Player player) {
         if(players.size() > MAX_PLAYERS) {
-            throw new RuntimeException("Maximum number of players reached");
+            throw new RuntimeException("Maximum number of players reached!!!");
         }
         players.add(player);
     }
@@ -108,14 +108,14 @@ public class Game {
     // discard pile is empty
     public void startGame() {
 
-        System.out.println("\n\n\n\n\n\n\n");
+        System.out.println("\n\n\n\n\n\n\n\n\n\n");
         System.out.println("Game Starts... ");
         
         while(!gameEnded) {
             // if card drawn than no need to check for top of the drawn dekh for special characters
             boolean cardDrawn = false;
             // Player plays
-            System.out.println("Current Player "+currentPlayerIndex);
+            // System.out.println("Current Player "+currentPlayerIndex);
             Player currentPlayer = players.get(currentPlayerIndex);
             System.out.println("\n");
             System.out.println(currentPlayer.getName() + "'s turn..");
@@ -166,6 +166,7 @@ public class Game {
                         currentPlayer.addCardInHand(drawCard());
                     } catch (GameDrawException ex) {
                         gameEnded = true;
+                        System.out.println("Game Draw!!!");
                     }
 
                 } else if(currentPlayer.getCards().get(cardIndex).getSuit() == discardPile.peek().getSuit() || 
@@ -212,9 +213,9 @@ public class Game {
                         // moveNextPlayerIndex();
                         System.out.println("Skip\n");
                         if(direction.equals(FORWARD)) {
-                            nextPlayerIndex = (currentPlayerIndex + 1) % players.size();
+                            nextPlayerIndex = (nextPlayerIndex + 1) % players.size();
                         } else {
-                            nextPlayerIndex = (currentPlayerIndex - 1);
+                            nextPlayerIndex = (nextPlayerIndex - 1);
                             if(nextPlayerIndex < 0) {
                                 nextPlayerIndex = players.size() - 1;
                             }
@@ -230,6 +231,16 @@ public class Game {
                         } else {
                             direction = BACKWARD;
                         }
+
+                        // adjust the next player
+                        if(direction.equals(FORWARD)) {
+                            nextPlayerIndex = (currentPlayerIndex + 1) % players.size();
+                        } else {
+                            nextPlayerIndex = (currentPlayerIndex - 1);
+                            if(nextPlayerIndex < 0) {
+                                nextPlayerIndex = players.size() - 1;
+                            }
+                        }
                         break;
                         
                     // Queens(Q): +2
@@ -243,6 +254,7 @@ public class Game {
                             }
                         } catch (GameDrawException ex) {
                             gameEnded = true;
+                            System.out.println("Game Draw!!!");
                         }
                         break;
                     
@@ -250,13 +262,14 @@ public class Game {
                     case JACK:
                         // draw 4 cards from drawDeck
                         // drawCardPalenty(players.get(nextPlayerIndex), 4);
-                        System.out.println("Draw 4\n");
+                        System.out.println("\nDraw 4");
                         try {
                             for(int i = 0; i < 4; i++) {
                                 players.get(nextPlayerIndex).addCardInHand(drawCard());
                             }
                         } catch (GameDrawException ex) {
                             gameEnded = true;
+                            System.out.println("Game Draw!!!");
                         }
                         break;
                     default:

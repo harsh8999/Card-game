@@ -1,7 +1,7 @@
 package cardgame.entity;
 
 public enum Suit {
-    SPADE("spade"), CLUBS("club"), HEART("heart"), DIAMONS("diamond");
+    SPADE("Spade"), CLUBS("Club"), HEART("Heart"), DIAMONS("Diamond");
 
     private String suit;
 
